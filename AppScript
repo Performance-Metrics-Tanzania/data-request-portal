@@ -1,0 +1,106 @@
+// Configuration
+const SHEET_NAME = "Data Request Portal"; // Change to match your sheet name
+const SPREADSHEET_ID = "1rASlDUz9iPfMduLaqsbLxYe_7s0XN555rBF7n0rJNBI"; // Replace with your Google Sheet ID
+
+/**
+ * doPost function receives data from the HTML form
+ * This is called when the form submits data via POST
+ */
+function doPost(e) {
+  try {
+    // Parse the JSON data from the form
+    const data = JSON.parse(e.postData.contents);
+    
+    // Get the spreadsheet and sheet
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    // If sheet doesn't exist, create it with headers
+    if (!sheet) {
+      createNewSheet(SHEET_NAME, spreadsheet);
+      sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    }
+    
+    // Format the date
+    const dateSubmitted = new Date(data.timestamp);
+    
+    // Prepare the row data
+    const rowData = [
+      dateSubmitted.toLocaleDateString('en-US'),  // Date Submitted
+      data.name,                                   // Requester Name
+      data.department,                             // Team/Department
+      data.problemArea,                            // Problem Area
+      data.problem,                                // Problem/Request
+      data.deadline,                               // Requested Timeline
+      data.status || "New",                        // Status
+      data.additionalNotes || ""                   // Notes
+    ];
+    
+    // Add the row to the sheet
+    sheet.appendRow(rowData);
+    
+    // Send success response
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: true, message: "Request submitted successfully" })
+    ).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error);
+    return ContentService.createTextOutput(
+      JSON.stringify({ success: false, message: error.toString() })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Creates a new sheet with proper headers
+ */
+function createNewSheet(sheetName, spreadsheet) {
+  const newSheet = spreadsheet.insertSheet(sheetName);
+  
+  const headers = [
+    "Date Submitted",
+    "Requester Name",
+    "Team/Department",
+    "Problem Area",
+    "Problem/Request",
+    "Requested Timeline",
+    "Status",
+    "Notes"
+  ];
+  
+  // Add headers to the first row
+  newSheet.appendRow(headers);
+  
+  // Format the header row
+  const headerRange = newSheet.getRange(1, 1, 1, headers.length);
+  headerRange.setBackground("#667eea");
+  headerRange.setFontColor("white");
+  headerRange.setFontWeight("bold");
+  
+  // Set column widths
+  newSheet.setColumnWidth(1, 120);  // Date
+  newSheet.setColumnWidth(2, 150);  // Name
+  newSheet.setColumnWidth(3, 120);  // Department
+  newSheet.setColumnWidth(4, 120);  // Problem Area
+  newSheet.setColumnWidth(5, 250);  // Problem/Request
+  newSheet.setColumnWidth(6, 120);  // Timeline
+  newSheet.setColumnWidth(7, 100);  // Status
+  newSheet.setColumnWidth(8, 180);  // Notes
+}
+
+/**
+ * Helper function to get the spreadsheet ID
+ * Run this in the Apps Script editor to find your ID
+ */
+function getSpreadsheetId() {
+  return SpreadsheetApp.getActiveSpreadsheet().getId();
+}
+
+/**
+ * Helper function to get the Apps Script URL for deployment
+ * After deploying, run this to get the URL
+ */
+function getDeploymentUrl() {
+  return "Use the URL from the 'Deploy as web app' dialog";
+}
