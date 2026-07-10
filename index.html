@@ -25,25 +25,31 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 640px;
             width: 100%;
             padding: 40px;
         }
 
         .header {
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             text-align: center;
         }
 
         .header h1 {
             color: #333;
-            font-size: 28px;
+            font-size: 30px;
             margin-bottom: 8px;
         }
 
-        .header p {
-            color: #666;
+        .header p,
+        .header .subtext {
+            color: #555;
             font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .subtext {
+            margin-top: 8px;
         }
 
         .form-group {
@@ -63,6 +69,7 @@
         }
 
         input[type="text"],
+        input[type="email"],
         input[type="date"],
         textarea,
         select {
@@ -76,6 +83,7 @@
         }
 
         input[type="text"]:focus,
+        input[type="email"]:focus,
         input[type="date"]:focus,
         textarea:focus,
         select:focus {
@@ -93,41 +101,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-        }
-
-        .form-row.full {
-            grid-template-columns: 1fr;
-        }
-
-        .status-select {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .status-option {
-            position: relative;
-        }
-
-        .status-option input[type="radio"] {
-            display: none;
-        }
-
-        .status-option label {
-            margin: 0;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .status-option input[type="radio"]:checked + label {
-            border-color: #667eea;
-            background: #f0f4ff;
-            font-weight: 700;
         }
 
         .button-group {
@@ -172,51 +145,42 @@
             background: #e0e0e0;
         }
 
-        .success-message {
+        .success-message,
+        .error-message,
+        .loading {
             display: none;
-            background: #d4edda;
-            color: #155724;
             padding: 15px;
             border-radius: 4px;
             margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .success-message.show,
+        .error-message.show,
+        .loading.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
             border: 1px solid #c3e6cb;
         }
 
-        .success-message.show {
-            display: block;
-        }
-
         .error-message {
-            display: none;
             background: #f8d7da;
             color: #721c24;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
             border: 1px solid #f5c6cb;
         }
 
-        .error-message.show {
-            display: block;
-        }
-
         .loading {
-            display: none;
             text-align: center;
             color: #667eea;
             font-weight: 600;
         }
 
-        .loading.show {
-            display: block;
-        }
-
-        @media (max-width: 600px) {
+        @media (max-width: 620px) {
             .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .status-select {
                 grid-template-columns: 1fr;
             }
 
@@ -230,7 +194,8 @@
     <div class="container">
         <div class="header">
             <h1>📊 Data Request Portal</h1>
-            <p>Submit your data request and we'll prioritize it for you</p>
+            <p>Submit your request to help the team prioritize and respond quickly.</p>
+            <p class="subtext">This portal is for dataset, survey deployment, dashboard, and monitoring requests. We will notify the team on new submissions.</p>
         </div>
 
         <div class="success-message" id="successMessage">
@@ -239,9 +204,7 @@
 
         <div class="error-message" id="errorMessage"></div>
 
-        <div class="loading" id="loading">
-            Submitting your request...
-        </div>
+        <div class="loading" id="loading">Submitting your request...</div>
 
         <form id="dataRequestForm">
             <div class="form-group form-row">
@@ -250,24 +213,27 @@
                     <input type="text" id="name" name="name" required>
                 </div>
                 <div>
-                    <label for="department">Team/Department <span class="required">*</span></label>
-                    <input type="text" id="department" name="department" placeholder="e.g., Implementation, Product" required>
+                    <label for="requesterEmail">Your Email <span class="required">*</span></label>
+                    <input type="email" id="requesterEmail" name="requesterEmail" placeholder="you@example.org" required>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="problemArea">Problem Area <span class="required">*</span></label>
-                <select id="problemArea" name="problemArea" required>
-                    <option value="">-- Select --</option>
-                    <option value="Dashboard">Dashboard</option>
-                    <option value="Data Quality">Data Quality</option>
-                    <option value="Monitoring Tools">Monitoring Tools</option>
-                    <option value="Training Data">Training Data</option>
-                    <option value="School Data">School Data</option>
-                    <option value="Teacher Data">Teacher Data</option>
-                    <option value="Performance Metrics">Performance Metrics</option>
-                    <option value="Other">Other</option>
-                </select>
+            <div class="form-group form-row">
+                <div>
+                    <label for="department">Team/Department <span class="required">*</span></label>
+                    <input type="text" id="department" name="department" placeholder="e.g., Implementation, Product" required>
+                </div>
+                <div>
+                    <label for="category">Request Category <span class="required">*</span></label>
+                    <select id="category" name="category" required>
+                        <option value="">-- Select --</option>
+                        <option value="Dataset">Dataset</option>
+                        <option value="Survey Deployment">Survey Deployment</option>
+                        <option value="Dashboard">Dashboard</option>
+                        <option value="Monitoring Tools">Monitoring Tools</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
@@ -275,28 +241,20 @@
                 <textarea id="problem" name="problem" placeholder="Describe what data you need or what issue you're facing..." required></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="deadline">Requested Timeline <span class="required">*</span></label>
-                <input type="date" id="deadline" name="deadline" required>
-            </div>
-
-            <div class="form-group form-row full">
+            <div class="form-group form-row">
                 <div>
-                    <label>Current Status <span class="required">*</span></label>
-                    <div class="status-select">
-                        <div class="status-option">
-                            <input type="radio" id="status_new" name="status" value="New" required>
-                            <label for="status_new">New</label>
-                        </div>
-                        <div class="status-option">
-                            <input type="radio" id="status_inprogress" name="status" value="In Progress">
-                            <label for="status_inprogress">In Progress</label>
-                        </div>
-                        <div class="status-option">
-                            <input type="radio" id="status_urgent" name="status" value="Urgent">
-                            <label for="status_urgent">Urgent</label>
-                        </div>
-                    </div>
+                    <label for="deadline">Requested Timeline <span class="required">*</span></label>
+                    <input type="date" id="deadline" name="deadline" required>
+                </div>
+                <div>
+                    <label for="priority">Priority <span class="required">*</span></label>
+                    <select id="priority" name="priority" required>
+                        <option value="">-- Select --</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Urgent">Urgent</option>
+                    </select>
                 </div>
             </div>
 
@@ -313,7 +271,6 @@
     </div>
 
     <script>
-        // Replace with your Google Apps Script URL
         const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCjBkzCjDUke-jQPSsKJCpkWyL-pOe8MM8C9-kvTPaEKbsBYq9coF1n8y1xxaWyG6ZMQ/exec";
 
         const form = document.getElementById('dataRequestForm');
@@ -322,31 +279,64 @@
         const loading = document.getElementById('loading');
         const submitBtn = document.getElementById('submitBtn');
 
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+
+        function validateForm(formData) {
+            const email = formData.get('requesterEmail');
+            const deadline = formData.get('deadline');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailPattern.test(email)) {
+                showError('Please enter a valid email address.');
+                return false;
+            }
+
+            if (deadline) {
+                const selectedDate = new Date(deadline);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) {
+                    showError('Requested timeline cannot be in the past.');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // Hide previous messages
             successMessage.classList.remove('show');
             errorMessage.classList.remove('show');
             loading.classList.add('show');
             submitBtn.disabled = true;
 
-            try {
-                // Collect form data
-                const formData = new FormData(form);
-                const data = {
-                    timestamp: new Date().toISOString(),
-                    name: formData.get('name'),
-                    department: formData.get('department'),
-                    problemArea: formData.get('problemArea'),
-                    problem: formData.get('problem'),
-                    deadline: formData.get('deadline'),
-                    status: formData.get('status'),
-                    additionalNotes: formData.get('additionalNotes')
-                };
+            const formData = new FormData(form);
+            if (!validateForm(formData)) {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+                return;
+            }
 
-                // Send to Google Apps Script
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+            const data = {
+                timestamp: new Date().toISOString(),
+                name: formData.get('name'),
+                requesterEmail: formData.get('requesterEmail'),
+                department: formData.get('department'),
+                category: formData.get('category'),
+                problem: formData.get('problem'),
+                deadline: formData.get('deadline'),
+                priority: formData.get('priority'),
+                additionalNotes: formData.get('additionalNotes'),
+                status: formData.get('status') || 'New'
+            };
+
+            try {
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
@@ -355,25 +345,21 @@
                     body: JSON.stringify(data)
                 });
 
-                // Show success message
                 loading.classList.remove('show');
                 successMessage.classList.add('show');
                 form.reset();
 
-                // Hide success message after 5 seconds
                 setTimeout(() => {
                     successMessage.classList.remove('show');
                 }, 5000);
-
             } catch (error) {
                 console.error('Error:', error);
                 loading.classList.remove('show');
-                errorMessage.textContent = '❌ Error submitting form. Please try again.';
-                errorMessage.classList.add('show');
+                showError('❌ Error submitting form. Please try again.');
             } finally {
                 submitBtn.disabled = false;
             }
         });
     </script>
 </body>
-</html>
+</html>''

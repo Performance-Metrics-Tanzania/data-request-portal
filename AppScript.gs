@@ -1,49 +1,43 @@
 // Configuration
 const SHEET_NAME = "Data Request Portal"; // Change to match your sheet name
 const SPREADSHEET_ID = "1rASlDUz9iPfMduLaqsbLxYe_7s0XN555rBF7n0rJNBI"; // Replace with your Google Sheet ID
+const NOTIFICATION_EMAILS = "mercy.idindili@experienceeducate.org,nemes.umela@experienceeducate.org";
 
 /**
  * doPost function receives data from the HTML form
- * This is called when the form submits data via POST
  */
 function doPost(e) {
   try {
-    // Parse the JSON data from the form
     const data = JSON.parse(e.postData.contents);
-    
-    // Get the spreadsheet and sheet
+
     const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
-    
-    // If sheet doesn't exist, create it with headers
+    let sheet = spreadsheet.getSheetByName(SHEET_NAME);
+
     if (!sheet) {
       createNewSheet(SHEET_NAME, spreadsheet);
       sheet = spreadsheet.getSheetByName(SHEET_NAME);
     }
-    
-    // Format the date
+
     const dateSubmitted = new Date(data.timestamp);
-    
-    // Prepare the row data
     const rowData = [
-      dateSubmitted.toLocaleDateString('en-US'),  // Date Submitted
-      data.name,                                   // Requester Name
-      data.department,                             // Team/Department
-      data.problemArea,                            // Problem Area
-      data.problem,                                // Problem/Request
-      data.deadline,                               // Requested Timeline
-      data.status || "New",                        // Status
-      data.additionalNotes || ""                   // Notes
+      dateSubmitted.toLocaleDateString('en-US'),
+      data.name || "",
+      data.requesterEmail || "",
+      data.department || "",
+      data.category || "",
+      data.problem || "",
+      data.priority || "Medium",
+      data.deadline || "",
+      data.status || "New",
+      data.additionalNotes || ""
     ];
-    
-    // Add the row to the sheet
+
     sheet.appendRow(rowData);
-    
-    // Send success response
+    sendNotificationEmail(data);
+
     return ContentService.createTextOutput(
       JSON.stringify({ success: true, message: "Request submitted successfully" })
     ).setMimeType(ContentService.MimeType.JSON);
-    
   } catch (error) {
     Logger.log('Error: ' + error);
     return ContentService.createTextOutput(
@@ -52,41 +46,63 @@ function doPost(e) {
   }
 }
 
+function sendNotificationEmail(data) {
+  const subject = `New Data Request: ${data.category || 'Request'} (${data.priority || 'Medium'})`;
+  const body = `
+    <p>A new request was submitted through the portal.</p>
+    <p><strong>Name:</strong> ${data.name || 'Unknown'}</p>
+    <p><strong>Email:</strong> ${data.requesterEmail || 'Not provided'}</p>
+    <p><strong>Department:</strong> ${data.department || 'Not provided'}</p>
+    <p><strong>Category:</strong> ${data.category || 'Not provided'}</p>
+    <p><strong>Priority:</strong> ${data.priority || 'Medium'}</p>
+    <p><strong>Deadline:</strong> ${data.deadline || 'Not provided'}</p>
+    <p><strong>Status:</strong> ${data.status || 'New'}</p>
+    <p><strong>Problem/Request:</strong><br>${data.problem || 'Not provided'}</p>
+    <p><strong>Notes:</strong><br>${data.additionalNotes || 'None'}</p>
+  `;
+
+  MailApp.sendEmail({
+    to: NOTIFICATION_EMAILS,
+    subject: subject,
+    htmlBody: body
+  });
+}
+
 /**
  * Creates a new sheet with proper headers
  */
 function createNewSheet(sheetName, spreadsheet) {
   const newSheet = spreadsheet.insertSheet(sheetName);
-  
   const headers = [
     "Date Submitted",
     "Requester Name",
+    "Requester Email",
     "Team/Department",
-    "Problem Area",
+    "Category",
     "Problem/Request",
+    "Priority",
     "Requested Timeline",
     "Status",
     "Notes"
   ];
-  
-  // Add headers to the first row
+
   newSheet.appendRow(headers);
-  
-  // Format the header row
+
   const headerRange = newSheet.getRange(1, 1, 1, headers.length);
   headerRange.setBackground("#667eea");
   headerRange.setFontColor("white");
   headerRange.setFontWeight("bold");
-  
-  // Set column widths
-  newSheet.setColumnWidth(1, 120);  // Date
-  newSheet.setColumnWidth(2, 150);  // Name
-  newSheet.setColumnWidth(3, 120);  // Department
-  newSheet.setColumnWidth(4, 120);  // Problem Area
-  newSheet.setColumnWidth(5, 250);  // Problem/Request
-  newSheet.setColumnWidth(6, 120);  // Timeline
-  newSheet.setColumnWidth(7, 100);  // Status
-  newSheet.setColumnWidth(8, 180);  // Notes
+
+  newSheet.setColumnWidth(1, 120);
+  newSheet.setColumnWidth(2, 150);
+  newSheet.setColumnWidth(3, 180);
+  newSheet.setColumnWidth(4, 150);
+  newSheet.setColumnWidth(5, 140);
+  newSheet.setColumnWidth(6, 260);
+  newSheet.setColumnWidth(7, 100);
+  newSheet.setColumnWidth(8, 120);
+  newSheet.setColumnWidth(9, 100);
+  newSheet.setColumnWidth(10, 200);
 }
 
 /**

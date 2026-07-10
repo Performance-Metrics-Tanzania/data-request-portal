@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Request Portal - Admin Dashboard</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f4f6fb;
+      color: #222;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      margin-bottom: 8px;
+      font-size: 32px;
+    }
+
+    header p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .controls label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .controls select,
+    .controls input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 220px;
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(18, 42, 66, 0.08);
+    }
+
+    .stat-card h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .stat-card p {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(18, 42, 66, 0.08);
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #eef2ff;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #edf2f7;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: #4a5568;
+      font-weight: 700;
+    }
+
+    tbody tr:hover {
+      background: #f7fafc;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .tag.New { background: #667eea; }
+    .tag.InProgress { background: #38b2ac; }
+    .tag.Urgent { background: #e53e3e; }
+    .tag.Low { background: #718096; }
+    .tag.Medium { background: #4299e1; }
+    .tag.High { background: #d69e2e; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Admin Dashboard Preview</h1>
+      <p>Review submitted requests, filter by status, priority, and category, and get a quick overview of current demand.</p>
+    </header>
+
+    <div class="controls">
+      <div>
+        <label for="filterStatus">Status</label>
+        <select id="filterStatus">
+          <option value="">All</option>
+          <option value="New">New</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Urgent">Urgent</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterPriority">Priority</label>
+        <select id="filterPriority">
+          <option value="">All</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+          <option value="Urgent">Urgent</option>
+        </select>
+      </div>
+      <div>
+        <label for="filterCategory">Category</label>
+        <select id="filterCategory">
+          <option value="">All</option>
+          <option value="Dataset">Dataset</option>
+          <option value="Survey Deployment">Survey Deployment</option>
+          <option value="Dashboard">Dashboard</option>
+          <option value="Monitoring Tools">Monitoring Tools</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label for="searchText">Search</label>
+        <input id="searchText" type="text" placeholder="Requester, keyword, notes...">
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <h2>Total Requests</h2>
+        <p id="summaryTotal">0</p>
+      </div>
+      <div class="stat-card">
+        <h2>Open Requests</h2>
+        <p id="summaryOpen">0</p>
+      </div>
+      <div class="stat-card">
+        <h2>Urgent Requests</h2>
+        <p id="summaryUrgent">0</p>
+      </div>
+      <div class="stat-card">
+        <h2>High Priority</h2>
+        <p id="summaryHigh">0</p>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Requester</th>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Request</th>
+          </tr>
+        </thead>
+        <tbody id="requestTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const requests = [
+      {
+        date: '2026-07-01',
+        name: 'Mercy Idindili',
+        email: 'mercy.idindili@experienceeducate.org',
+        department: 'Monitoring',
+        category: 'Dashboard',
+        priority: 'High',
+        status: 'New',
+        summary: 'Add live attendance dashboard for teachers and schools.'
+      },
+      {
+        date: '2026-06-28',
+        name: 'Nemes Umela',
+        email: 'nemes.umela@experienceeducate.org',
+        department: 'Implementation',
+        category: 'Survey Deployment',
+        priority: 'Urgent',
+        status: 'In Progress',
+        summary: 'Deploy endline survey for partner cohort this week.'
+      },
+      {
+        date: '2026-06-25',
+        name: 'Jane Doe',
+        email: 'jane.doe@experienceeducate.org',
+        department: 'Product',
+        category: 'Dataset',
+        priority: 'Medium',
+        status: 'New',
+        summary: 'Provide cleaned school roster data for reporting.'
+      }
+    ];
+
+    const filterStatus = document.getElementById('filterStatus');
+    const filterPriority = document.getElementById('filterPriority');
+    const filterCategory = document.getElementById('filterCategory');
+    const searchText = document.getElementById('searchText');
+    const requestTable = document.getElementById('requestTable');
+    const summaryTotal = document.getElementById('summaryTotal');
+    const summaryOpen = document.getElementById('summaryOpen');
+    const summaryUrgent = document.getElementById('summaryUrgent');
+    const summaryHigh = document.getElementById('summaryHigh');
+
+    function renderTable() {
+      const filters = {
+        status: filterStatus.value,
+        priority: filterPriority.value,
+        category: filterCategory.value,
+        search: searchText.value.trim().toLowerCase()
+      };
+
+      const filtered = requests.filter((item) => {
+        const matchesStatus = !filters.status || item.status === filters.status;
+        const matchesPriority = !filters.priority || item.priority === filters.priority;
+        const matchesCategory = !filters.category || item.category === filters.category;
+        const matchesSearch = !filters.search ||
+          item.name.toLowerCase().includes(filters.search) ||
+          item.email.toLowerCase().includes(filters.search) ||
+          item.department.toLowerCase().includes(filters.search) ||
+          item.summary.toLowerCase().includes(filters.search);
+
+        return matchesStatus && matchesPriority && matchesCategory && matchesSearch;
+      });
+
+      requestTable.innerHTML = filtered.map((item) => `
+        <tr>
+          <td>${item.date}</td>
+          <td>${item.name}</td>
+          <td>${item.email}</td>
+          <td>${item.department}</td>
+          <td>${item.category}</td>
+          <td>${item.priority}</td>
+          <td><span class="tag ${item.status.replace(/\s+/g, '')}">${item.status}</span></td>
+          <td>${item.summary}</td>
+        </tr>
+      `).join('');
+
+      summaryTotal.textContent = filtered.length;
+      summaryOpen.textContent = filtered.filter((item) => item.status === 'New' || item.status === 'In Progress').length;
+      summaryUrgent.textContent = filtered.filter((item) => item.priority === 'Urgent').length;
+      summaryHigh.textContent = filtered.filter((item) => item.priority === 'High').length;
+    }
+
+    filterStatus.addEventListener('change', renderTable);
+    filterPriority.addEventListener('change', renderTable);
+    filterCategory.addEventListener('change', renderTable);
+    searchText.addEventListener('input', renderTable);
+
+    renderTable();
+  </script>
+</body>
+</html>
